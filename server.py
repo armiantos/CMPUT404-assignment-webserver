@@ -1,5 +1,6 @@
 # coding: utf-8
 import socketserver
+import json
 
 from status_codes import STATUS_CODES
 from content_types import CONTENT_TYPES
@@ -38,19 +39,37 @@ def status_line(status_code: int) -> str:
 
 def respond_with_file(file_path: str) -> str:
     # https://www.w3schools.com/python/python_file_open.asp
-    with open(file_path) as file:
-        content = file.read()
+    try:
+        file = open(file_path)
+    except FileNotFoundError as err:
+        # https://www.geeksforgeeks.org/how-to-convert-python-dictionary-to-json/
+        payload = json.dumps({
+            'err': err.strerror
+        })
+        entity_headers = '\r\n'.join([
+            f'Content-Length: {len(payload)}',
+            f'Content-Type: {len(payload)}'
+        ])
+
+        return '\r\n'.join([
+            status_line(404),
+            entity_headers,
+            f'\r\n{payload}'
+        ])
+    else:
+        payload = file.read()
         extension = file_path.split('.')[-1]
 
-        payload = f'{content}'
+        entity_headers = '\r\n'.join([
+            f'Content-Type: {CONTENT_TYPES[extension]}',
+            f'Content-Length: {len(payload)}'
+        ])
 
-        entity_headers = '\r\n'.join(
-            [f'Content-Type: {CONTENT_TYPES[extension]}',
-             f'Content-Length: {len(payload)}']
-        )
-        return '\r\n'.join([status_line(200),
-                            entity_headers,
-                            f'\r\n{payload}'])
+        return '\r\n'.join([
+            status_line(200),
+            entity_headers,
+            f'\r\n{payload}'
+        ])
 
 
 class MyWebServer(socketserver.BaseRequestHandler):
