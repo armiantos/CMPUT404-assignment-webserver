@@ -39,7 +39,6 @@ class FileServer:
 
         payload = file.read()
         extension = requested_file_path.split('.')[-1]
-        print(f'{extension}: {CONTENT_TYPES[extension]}')
 
         request.respond_with_raw(
             message_body=payload,
