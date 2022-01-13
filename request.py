@@ -5,9 +5,10 @@ from constants import HTTP_METHODS, STATUS_CODES, CONTENT_TYPES
 class Request:
     def __init__(self, socket_request):
         try:
-            data = socket_request.recv(1024).strip()
+            tcp_payload = socket_request.recv(1024).strip()
+
             # https://stackoverflow.com/questions/606191/convert-bytes-to-a-string
-            http_request: str = data.decode('utf-8')
+            http_request: str = tcp_payload.decode('utf-8')
             self.__request = socket_request
 
             http_headers = http_request.split('\r\n\r\n')[0]
@@ -34,7 +35,7 @@ class Request:
 
         return True
 
-    def status_line(self, status_code: int) -> str:
+    def __status_line(self, status_code: int) -> str:
         http_version = 'HTTP/1.1'
         reason_phrase = STATUS_CODES[status_code]
         return f'{http_version} {status_code} {reason_phrase}'
@@ -64,7 +65,7 @@ class Request:
 
         self.__request.sendall(
             bytearray('\r\n'.join([
-                self.status_line(status_code),
+                self.__status_line(status_code),
                 '\r\n'.join(entity_headers),
                 f'\r\n{message_body}'
             ]), 'utf-8'))
