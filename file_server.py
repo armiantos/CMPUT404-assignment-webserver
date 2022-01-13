@@ -55,7 +55,7 @@ class FileServer:
 
         request.reply(
             message_body=payload,
-            content_type=CONTENT_TYPES[extension],
+            content_type=CONTENT_TYPES[extension] if extension in CONTENT_TYPES else None,
             status_code=200
         )
 
