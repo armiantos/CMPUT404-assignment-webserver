@@ -24,7 +24,7 @@ class FileServer:
 
         # https://www.geeksforgeeks.org/python-os-path-join-method/
         file_path = os.path.join(
-            self.directory_path, request.uri.removeprefix(self.base_path))
+            self.directory_path, request.uri.replace(self.base_path, '', 1))
         if file_path.endswith('/'):
             file_path = os.path.join(
                 file_path, 'index.html')
