@@ -1,5 +1,6 @@
 from content_types import CONTENT_TYPES
 from request import Request
+import os
 
 
 class FileServer:
@@ -21,9 +22,14 @@ class FileServer:
             )
             return False
 
-        requested_file_path = f'{self.directory_path}{request.uri}'
-        if requested_file_path.endswith('/'):
-            requested_file_path += 'index.html'
+        # https://www.geeksforgeeks.org/python-os-path-join-method/
+        requested_file_path = os.path.join(
+            self.base_path,
+            request.uri,
+            '' if not request.uri.endswith('/') else 'index.html'
+        )
+
+        print(requested_file_path)
 
         # https://www.w3schools.com/python/python_file_open.asp
         try:
