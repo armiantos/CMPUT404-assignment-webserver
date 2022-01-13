@@ -26,6 +26,10 @@ class FileServer:
         # https://www.geeksforgeeks.org/python-os-path-join-method/
         file_path = os.path.join(
             self.directory_path, remove_prefix(request.uri, self.base_path))
+        if os.path.isdir(file_path) and not file_path.endswith('/'):
+            request.reply_json({'msg': f'Redirecting you to {request.uri}/'},
+                               status_code=301, extra_headers=f'Location: {request.uri}/')
+            return
         if file_path.endswith('/'):
             file_path = os.path.join(
                 file_path, 'index.html')

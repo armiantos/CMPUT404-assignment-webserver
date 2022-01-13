@@ -40,12 +40,13 @@ class Request:
         reason_phrase = STATUS_CODES[status_code]
         return f'{http_version} {status_code} {reason_phrase}'
 
-    def reply_json(self, obj: dict, status_code: int):
+    def reply_json(self, obj: dict, status_code: int, extra_headers: str = None):
         # https://www.geeksforgeeks.org/how-to-convert-python-dictionary-to-json/
         self.reply(
             status_code,
             message_body=json.dumps(obj),
-            content_type=CONTENT_TYPES['json']
+            content_type=CONTENT_TYPES['json'],
+            extra_headers=extra_headers
         )
 
     def reply(self,
