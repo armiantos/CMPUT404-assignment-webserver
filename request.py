@@ -45,5 +45,28 @@ class Request:
             f'\r\n{payload}'
         ]), 'utf-8'))
 
-    def respond_with_raw(self, raw_data, status_code: int = 200):
-        self.__request.sendall(bytearray(raw_data, 'utf-8'))
+    def respond_with_raw(self,
+                         status_code: int,
+                         message_body: str,
+                         content_type: str,
+                         extra_headers: str = None):
+        entity_headers = [
+            f'Content-Length: {len(message_body)}',
+        ]
+
+        if content_type != None:
+            entity_headers.append(f'Content-Type: {content_type}')
+
+        header_strings = [
+            self.status_line(status_code),
+            '\r\n'.join(entity_headers),
+        ]
+
+        if extra_headers != None:
+            header_strings.append(extra_headers)
+
+        self.__request.sendall(bytearray('\r\n'.join([
+            self.status_line(status_code),
+            '\r\n'.join(header_strings),
+            f'\r\n{message_body}'
+        ]), 'utf-8'))

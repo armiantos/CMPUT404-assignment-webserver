@@ -14,7 +14,6 @@ class FileServer:
         requested_file_path = f'{self.directory_path}{request.uri}'
         if requested_file_path.endswith('/'):
             requested_file_path += 'index.html'
-        print(requested_file_path)
 
         self.__send_http_response(request, requested_file_path)
 
@@ -24,24 +23,15 @@ class FileServer:
         # https://www.w3schools.com/python/python_file_open.asp
         try:
             file = open(file_path, encoding='utf-8')
-        except FileNotFoundError as err:
-            return request.respond_with_json({
-                'err': err.strerror
-            })
-        else:
             payload = file.read()
             extension = file_path.split('.')[-1]
 
-            entity_headers = '\r\n'.join([
-                f'Content-Type: {CONTENT_TYPES[extension]}',
-                f'Content-Length: {len(payload)}'
-            ])
-
             request.respond_with_raw(
-                '\r\n'.join([
-                    request.status_line(200),
-                    entity_headers,
-                    f'\r\n{payload}'
-                ]),
-                200
+                message_body=payload,
+                content_type=CONTENT_TYPES[extension],
+                status_code=200
             )
+        except FileNotFoundError as err:
+            return request.respond_with_json({'err': err.strerror}, status_code=404)
+        else:
+            return request.respond_with_json({'err': 'Unknown error occured'}, status_code=500)
