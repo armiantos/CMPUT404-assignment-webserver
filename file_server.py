@@ -1,4 +1,4 @@
-from content_types import CONTENT_TYPES
+from constants import CONTENT_TYPES
 from helpers import remove_prefix
 from request import Request
 import os

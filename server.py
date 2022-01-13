@@ -3,8 +3,6 @@ import socketserver
 from file_server import FileServer
 from request import Request
 
-from status_codes import STATUS_CODES
-from content_types import CONTENT_TYPES
 
 # Copyright 2013 Abram Hindle, Eddie Antonio Santos
 #
@@ -35,12 +33,16 @@ from content_types import CONTENT_TYPES
 class MyWebServer(socketserver.BaseRequestHandler):
     def handle(self):
         request = Request(self.request)
+        if not request.valid:
+            request.reply_bytearray(
+                bytearray("Request doesn't follow HTTP/1.1 protocol", 'utf-8'))
+            return
 
         file_server = FileServer('/', './www')
         if file_server.handle(request):
             return
 
-        request.reply_json({'err': 'No matching route'}, 404)
+        request.reply_json({'err': 'No matching route'}, status_code=404)
 
 
 if __name__ == "__main__":

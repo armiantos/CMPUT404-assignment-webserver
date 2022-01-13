@@ -1,31 +1,38 @@
 import json
-from content_types import CONTENT_TYPES
-from status_codes import STATUS_CODES
+from constants import HTTP_METHODS, STATUS_CODES, CONTENT_TYPES
 
 
 class Request:
     def __init__(self, socket_request):
-        data = socket_request.recv(1024).strip()
-        # https://stackoverflow.com/questions/606191/convert-bytes-to-a-string
-        http_request: str = data.decode('utf-8')
-        self.__request = socket_request
+        try:
+            data = socket_request.recv(1024).strip()
+            # https://stackoverflow.com/questions/606191/convert-bytes-to-a-string
+            http_request: str = data.decode('utf-8')
+            self.__request = socket_request
 
-        http_headers = http_request.split('\r\n\r\n')[0]
+            http_headers = http_request.split('\r\n\r\n')[0]
 
-        headers_split = http_headers.split('\r\n')
-        request_line = headers_split[0]
-        self.headers = headers_split[1:]
+            headers_split = http_headers.split('\r\n')
+            request_line = headers_split[0]
+            self.headers = headers_split[1:]
 
-        method, uri, http_version = request_line.split(' ')
+            method, uri, http_version = request_line.split(' ')
 
-        self.method = method
-        self.uri = uri
-        self.http_version = http_version
+            self.method = method
+            self.uri = uri
+            self.http_version = http_version
 
-        self.__validate()
+            self.valid = self.__validate()
+        except:
+            self.valid = False
 
     def __validate(self):
-        pass
+        if self.method not in HTTP_METHODS:
+            return False
+        if self.http_version != 'HTTP/1.1':
+            return False
+
+        return True
 
     def status_line(self, status_code: int) -> str:
         http_version = 'HTTP/1.1'
@@ -61,3 +68,6 @@ class Request:
                 '\r\n'.join(entity_headers),
                 f'\r\n{message_body}'
             ]), 'utf-8'))
+
+    def reply_bytearray(self, byte_array: bytearray):
+        self.__request.sendall(byte_array)
