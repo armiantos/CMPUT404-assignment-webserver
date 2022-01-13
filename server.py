@@ -1,6 +1,7 @@
 # coding: utf-8
 import socketserver
-import json
+from file_server import FileServer
+from request import Request
 
 from status_codes import STATUS_CODES
 from content_types import CONTENT_TYPES
@@ -31,64 +32,15 @@ from content_types import CONTENT_TYPES
 # try: curl -v -X GET http://127.0.0.1:8080/
 
 
-def status_line(status_code: int) -> str:
-    http_version = 'HTTP/1.1'
-    reason_phrase = STATUS_CODES[status_code]
-    return f'{http_version} {status_code} {reason_phrase}'
-
-
-def respond_with_file(file_path: str) -> str:
-    # https://www.w3schools.com/python/python_file_open.asp
-    try:
-        file = open(file_path)
-    except FileNotFoundError as err:
-        # https://www.geeksforgeeks.org/how-to-convert-python-dictionary-to-json/
-        payload = json.dumps({
-            'err': err.strerror
-        })
-        entity_headers = '\r\n'.join([
-            f'Content-Length: {len(payload)}',
-            f'Content-Type: {len(payload)}'
-        ])
-
-        return '\r\n'.join([
-            status_line(404),
-            entity_headers,
-            f'\r\n{payload}'
-        ])
-    else:
-        payload = file.read()
-        extension = file_path.split('.')[-1]
-
-        entity_headers = '\r\n'.join([
-            f'Content-Type: {CONTENT_TYPES[extension]}',
-            f'Content-Length: {len(payload)}'
-        ])
-
-        return '\r\n'.join([
-            status_line(200),
-            entity_headers,
-            f'\r\n{payload}'
-        ])
-
-
 class MyWebServer(socketserver.BaseRequestHandler):
     def handle(self):
-        self.data = self.request.recv(1024).strip()
-        # https://stackoverflow.com/questions/606191/convert-bytes-to-a-string
-        request = self.data.decode("utf-8")
+        request = Request(self.request)
 
-        # TODO: Verify if HTTP request
+        file_server = FileServer('/', './www')
+        if file_server.handle(request):
+            return
 
-        request_line = request.split('\r\n')[0]
-        method, path, http_version = request_line.split(' ')
-
-        if path == '/':
-            path = '/index.html'
-
-        path = f'./www/{path}'
-
-        self.request.sendall(bytearray(respond_with_file(path), 'utf-8'))
+        request.respond_with_json({'err': 'No matching route'}, 404)
 
 
 if __name__ == "__main__":
