@@ -4,13 +4,13 @@ from constants import HTTP_METHODS, STATUS_CODES, CONTENT_TYPES
 
 class Request:
     def __init__(self, socket_request):
+        tcp_payload = socket_request.recv(1024).strip()
+
+        # https://stackoverflow.com/questions/606191/convert-bytes-to-a-string
+        http_request: str = tcp_payload.decode('utf-8')
+        self.__request = socket_request
+
         try:
-            tcp_payload = socket_request.recv(1024).strip()
-
-            # https://stackoverflow.com/questions/606191/convert-bytes-to-a-string
-            http_request: str = tcp_payload.decode('utf-8')
-            self.__request = socket_request
-
             http_headers = http_request.split('\r\n\r\n')[0]
 
             headers_split = http_headers.split('\r\n')
