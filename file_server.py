@@ -1,5 +1,5 @@
 from constants import CONTENT_TYPES
-from helpers import remove_prefix
+from helpers import is_path_under_directory, remove_prefix
 from request import Request
 import os
 
@@ -21,7 +21,7 @@ class FileServer:
                 content_type=CONTENT_TYPES['json'],
                 status_code=405
             )
-            return False
+            return True
 
         # https://www.geeksforgeeks.org/python-os-path-join-method/
         file_path = os.path.join(
@@ -33,6 +33,10 @@ class FileServer:
         if file_path.endswith('/'):
             file_path = os.path.join(
                 file_path, 'index.html')
+        if not is_path_under_directory(file_path, self.directory_path):
+            request.reply_json(
+                {'err': FileNotFoundError().strerror}, status_code=404)
+            return True
 
         # https://www.w3schools.com/python/python_file_open.asp
         try:
@@ -40,11 +44,11 @@ class FileServer:
 
         except FileNotFoundError as err:
             request.reply_json({'err': err.strerror}, status_code=404)
-            return False
+            return True
         except:
             request.reply_json(
                 {'err': 'Unknown error occured'}, status_code=500)
-            return False
+            return True
 
         payload = file.read()
         extension = file_path.split('.')[-1]
