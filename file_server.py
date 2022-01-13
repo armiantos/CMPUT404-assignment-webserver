@@ -23,11 +23,10 @@ class FileServer:
             return False
 
         # https://www.geeksforgeeks.org/python-os-path-join-method/
-        requested_file_path = os.path.join(
-            self.base_path,
-            request.uri,
-            '' if not request.uri.endswith('/') else 'index.html'
-        )
+        requested_file_path = os.path.join(self.base_path, request.uri)
+        if requested_file_path.endswith('/'):
+            requested_file_path = os.path.join(
+                requested_file_path, 'index.html')
 
         print(requested_file_path)
 
