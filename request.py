@@ -1,4 +1,5 @@
 import json
+from content_types import CONTENT_TYPES
 from status_codes import STATUS_CODES
 
 
@@ -34,14 +35,15 @@ class Request:
     def respond_with_json(self, obj: dict, status_code: int = 200):
         # https://www.geeksforgeeks.org/how-to-convert-python-dictionary-to-json/
         payload = json.dumps(obj)
-        entity_headers = '\r\n'.join([
+        json_content_type = CONTENT_TYPES['json']
+        entity_headers = [
             f'Content-Length: {len(payload)}',
-            f'Content-Type: {len(payload)}'
-        ])
+            f'Content-Type: {json_content_type}'
+        ]
 
         self.__request.sendall(bytearray('\r\n'.join([
             self.status_line(status_code),
-            entity_headers,
+            '\r\n'.join(entity_headers),
             f'\r\n{payload}'
         ]), 'utf-8'))
 
