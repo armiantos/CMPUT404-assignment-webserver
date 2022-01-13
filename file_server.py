@@ -23,16 +23,14 @@ class FileServer:
             return False
 
         # https://www.geeksforgeeks.org/python-os-path-join-method/
-        requested_file_path = os.path.join(self.base_path, request.uri)
-        if requested_file_path.endswith('/'):
-            requested_file_path = os.path.join(
-                requested_file_path, 'index.html')
-
-        print(requested_file_path)
+        file_path = os.path.join(self.base_path, request.uri)
+        if file_path.endswith('/'):
+            file_path = os.path.join(
+                file_path, 'index.html')
 
         # https://www.w3schools.com/python/python_file_open.asp
         try:
-            file = open(requested_file_path, encoding='utf-8')
+            file = open(file_path, encoding='utf-8')
 
         except FileNotFoundError as err:
             request.respond_with_json({'err': err.strerror}, status_code=404)
@@ -43,7 +41,7 @@ class FileServer:
             return False
 
         payload = file.read()
-        extension = requested_file_path.split('.')[-1]
+        extension = file_path.split('.')[-1]
 
         request.respond_with_raw(
             message_body=payload,
