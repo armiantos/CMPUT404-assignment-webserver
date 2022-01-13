@@ -23,7 +23,8 @@ class FileServer:
             return False
 
         # https://www.geeksforgeeks.org/python-os-path-join-method/
-        file_path = os.path.join(self.base_path, request.uri)
+        file_path = os.path.join(
+            self.directory_path, request.uri.removeprefix(self.base_path))
         if file_path.endswith('/'):
             file_path = os.path.join(
                 file_path, 'index.html')

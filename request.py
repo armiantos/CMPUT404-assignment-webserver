@@ -59,16 +59,11 @@ class Request:
         if content_type != None:
             entity_headers.append(f'Content-Type: {content_type}')
 
-        header_strings = [
-            self.status_line(status_code),
-            '\r\n'.join(entity_headers),
-        ]
-
         if extra_headers != None:
-            header_strings.append(extra_headers)
+            entity_headers.append(extra_headers)
 
         self.__request.sendall(bytearray('\r\n'.join([
             self.status_line(status_code),
-            '\r\n'.join(header_strings),
+            '\r\n'.join(entity_headers),
             f'\r\n{message_body}'
         ]), 'utf-8'))
