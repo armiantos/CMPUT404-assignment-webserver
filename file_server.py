@@ -1,4 +1,5 @@
 from content_types import CONTENT_TYPES
+from helpers import remove_prefix
 from request import Request
 import os
 
@@ -24,7 +25,7 @@ class FileServer:
 
         # https://www.geeksforgeeks.org/python-os-path-join-method/
         file_path = os.path.join(
-            self.directory_path, request.uri.replace(self.base_path, '', 1))
+            self.directory_path, remove_prefix(request.uri, self.base_path))
         if file_path.endswith('/'):
             file_path = os.path.join(
                 file_path, 'index.html')
