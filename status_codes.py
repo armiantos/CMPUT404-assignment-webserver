@@ -1,4 +1,4 @@
-# https://www.w3.org/Protocols/rfc2616/rfc2616-sec6.html#sec6
+# https://datatracker.ietf.org/doc/html/rfc2616#section-6.1.1
 STATUS_CODES = {
     100: 'Continue',
     101: 'Switching Protocols',
