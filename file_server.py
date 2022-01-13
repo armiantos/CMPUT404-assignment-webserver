@@ -16,7 +16,7 @@ class FileServer:
 
         # TODO: Test with flask to see if this is the desired behavior
         if request.method != 'GET':
-            request.respond_with_raw(
+            request.reply(
                 message_body={},
                 content_type=CONTENT_TYPES['json'],
                 status_code=405
@@ -35,17 +35,17 @@ class FileServer:
             file = open(file_path, encoding='utf-8')
 
         except FileNotFoundError as err:
-            request.respond_with_json({'err': err.strerror}, status_code=404)
+            request.reply_json({'err': err.strerror}, status_code=404)
             return False
         except:
-            request.respond_with_json(
+            request.reply_json(
                 {'err': 'Unknown error occured'}, status_code=500)
             return False
 
         payload = file.read()
         extension = file_path.split('.')[-1]
 
-        request.respond_with_raw(
+        request.reply(
             message_body=payload,
             content_type=CONTENT_TYPES[extension],
             status_code=200

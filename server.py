@@ -40,7 +40,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
         if file_server.handle(request):
             return
 
-        request.respond_with_json({'err': 'No matching route'}, 404)
+        request.reply_json({'err': 'No matching route'}, 404)
 
 
 if __name__ == "__main__":

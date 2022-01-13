@@ -32,26 +32,19 @@ class Request:
         reason_phrase = STATUS_CODES[status_code]
         return f'{http_version} {status_code} {reason_phrase}'
 
-    def respond_with_json(self, obj: dict, status_code: int = 200):
+    def reply_json(self, obj: dict, status_code: int):
         # https://www.geeksforgeeks.org/how-to-convert-python-dictionary-to-json/
-        payload = json.dumps(obj)
-        json_content_type = CONTENT_TYPES['json']
-        entity_headers = [
-            f'Content-Length: {len(payload)}',
-            f'Content-Type: {json_content_type}'
-        ]
+        self.reply(
+            status_code,
+            message_body=json.dumps(obj),
+            content_type=CONTENT_TYPES['json']
+        )
 
-        self.__request.sendall(bytearray('\r\n'.join([
-            self.status_line(status_code),
-            '\r\n'.join(entity_headers),
-            f'\r\n{payload}'
-        ]), 'utf-8'))
-
-    def respond_with_raw(self,
-                         status_code: int,
-                         message_body: str,
-                         content_type: str,
-                         extra_headers: str = None):
+    def reply(self,
+              status_code: int,
+              message_body: str,
+              content_type: str,
+              extra_headers: str = None):
         entity_headers = [
             f'Content-Length: {len(message_body)}',
         ]
@@ -62,8 +55,9 @@ class Request:
         if extra_headers != None:
             entity_headers.append(extra_headers)
 
-        self.__request.sendall(bytearray('\r\n'.join([
-            self.status_line(status_code),
-            '\r\n'.join(entity_headers),
-            f'\r\n{message_body}'
-        ]), 'utf-8'))
+        self.__request.sendall(
+            bytearray('\r\n'.join([
+                self.status_line(status_code),
+                '\r\n'.join(entity_headers),
+                f'\r\n{message_body}'
+            ]), 'utf-8'))
