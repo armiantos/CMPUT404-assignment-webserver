@@ -5,16 +5,34 @@ import os
 
 
 class FileServer:
+    """Serves files in directory using HTTP"""
+
     def __init__(self, base_path: str, directory_path: str):
+        """
+        Creates a new file server that can serve files under directory_path
+        through HTTP routes with prefix base_path
+
+        Params:
+        - `base_path` - HTTP URI prefix to listen to (e.g. `/www/`)
+        - `directory_path` - Relative path to directory to serve files from
+        """
         self.base_path = base_path
         self.directory_path = directory_path
 
     def handle(self, request: Request) -> bool:
+        """
+        Attempt to handle an HTTP request using this file server
+
+        Params:
+        - `request` - the HTTP request object
+
+        Returns:
+        True if the request was handled, False otherwise        
+        """
         # Match route
         if not request.uri.startswith(self.base_path):
             return False
 
-        # TODO: Test with flask to see if this is the desired behavior
         if request.method != 'GET':
             request.reply(
                 message_body={},

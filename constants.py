@@ -49,6 +49,7 @@ CONTENT_TYPES = {
     'json': 'application/json',
 }
 
+# https://datatracker.ietf.org/doc/html/rfc2616#section-5.1.1
 HTTP_METHODS = [
     'OPTIONS',
     'GET',
