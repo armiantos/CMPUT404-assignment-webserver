@@ -4,6 +4,7 @@ from file_server import FileServer
 from request import Request
 
 
+# Copyright 2022 Armianto Sumitro
 # Copyright 2013 Abram Hindle, Eddie Antonio Santos
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
