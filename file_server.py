@@ -41,6 +41,8 @@ class FileServer:
             )
             return True
 
+        encoding = 'utf-8'
+
         # https://www.geeksforgeeks.org/python-os-path-join-method/
         file_path = os.path.join(
             self.directory_path, remove_prefix(request.uri, self.base_path))
@@ -58,7 +60,7 @@ class FileServer:
 
         # https://www.w3schools.com/python/python_file_open.asp
         try:
-            file = open(file_path, encoding='utf-8')
+            file = open(file_path, encoding=encoding)
 
         except FileNotFoundError as err:
             request.reply_json({'err': err.strerror}, status_code=404)
@@ -71,9 +73,13 @@ class FileServer:
         payload = file.read()
         extension = file_path.split('.')[-1]
 
+        content_type = None
+        if extension in CONTENT_TYPES:
+            content_type = f'{CONTENT_TYPES[extension]}; charset={encoding}'
+
         request.reply(
             message_body=payload,
-            content_type=CONTENT_TYPES[extension] if extension in CONTENT_TYPES else None,
+            content_type=content_type,
             status_code=200
         )
 

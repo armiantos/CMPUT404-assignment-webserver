@@ -92,7 +92,7 @@ class Request:
         Params:
         - `status_code` - the HTTP response that should be sent to the client
         - `message_body` - a string representation of the message body
-        - `content_type` - the value to be used in the 'Content-Type' field of the HTTP header
+        - `content_type` - the value to be used in the 'Content-Type' field of the HTTP header (possibly including character encoding)
         - `extra_headers` - additional headers that should be attached (use `'\r\n'.join`
            if you have multiple headers that need to be attached)
         """
