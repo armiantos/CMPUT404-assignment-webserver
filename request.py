@@ -1,8 +1,9 @@
 import json
-from socket import SHUT_WR, SocketType
+from socket import SHUT_WR, SocketType, timeout
 from constants import HTTP_METHODS, STATUS_CODES, CONTENT_TYPES
 
 BUFFER_SIZE = 1024
+READ_REQUEST_TIMEOUT_SECONDS = 1
 
 
 class Request:
@@ -40,10 +41,22 @@ class Request:
     def __read_full_request(self, socket: SocketType) -> bytes:
         """
         Reads the entire TCP payload from the socket by unblocking the socket and
-        read the payload in chunks until it is finished
+        read the payload in chunks until it is finished. Assumes there's only
+        one HTTP request sent per connection.
         """
-        # TODO: Find a proper way to read full socket length
-        return socket.recv(BUFFER_SIZE)
+        socket.settimeout(READ_REQUEST_TIMEOUT_SECONDS)
+        payload = b''
+        is_finished = False
+        while not is_finished:
+            try:
+                chunk = socket.recv(BUFFER_SIZE)
+                if len(chunk) < BUFFER_SIZE:
+                    is_finished = True
+                payload += chunk
+            except timeout:
+                # Timeout when chunk size is an integer multiple of BUFFER_SIZE
+                is_finished = True
+        return payload
 
     def __validate(self) -> bool:
         """
@@ -117,6 +130,7 @@ class Request:
         """
         entity_headers = [
             f'Content-Length: {len(message_body)}',
+            f'Connection: close',
         ]
 
         if content_type != None:
