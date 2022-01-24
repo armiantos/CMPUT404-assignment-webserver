@@ -32,4 +32,3 @@ compatible) http://docs.python.org/2/library/socketserver.html
 - Implementation of `str.removeprefix` from [Built-in Types — Python 3.10.1 documentation](https://docs.python.org/3/library/stdtypes.html#str.removeprefix)
 - How to convert a bytes like object to string adapted from [StackOverFlow - Convert bytes to a string](https://stackoverflow.com/questions/606191/convert-bytes-to-a-string)
 - How to convert a dictionary to JSON adapted from [GeeksForGeeks - How To Convert Python Dictionary To JSON?](https://www.geeksforgeeks.org/how-to-convert-python-dictionary-to-json/)
-- Reading multiple chunks from the same socket using non blocking sockets [recv(2) - the flags argument](https://manpages.debian.org/bullseye/manpages-dev/recv.2.en.html#The_flags_argument)
