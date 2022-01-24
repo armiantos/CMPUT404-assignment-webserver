@@ -1,5 +1,5 @@
 import json
-from socket import MSG_DONTWAIT, SocketType, socket
+from socket import MSG_DONTWAIT, SHUT_WR, SocketType
 from constants import HTTP_METHODS, STATUS_CODES, CONTENT_TYPES
 
 BUFFER_SIZE = 1024
@@ -81,6 +81,13 @@ class Request:
         reason_phrase = STATUS_CODES[status_code]
         return f'{http_version} {status_code} {reason_phrase}'
 
+    def __close_connection(self):
+        """
+        Closes the socket connection to finish the request gracefully
+        """
+        self.__request.shutdown(SHUT_WR)
+        self.__request.close()
+
     def reply_json(self, obj: dict, status_code: int, extra_headers: str = None):
         """
         Respond to a HTTP request with a json object
@@ -98,6 +105,7 @@ class Request:
             content_type=CONTENT_TYPES['json'],
             extra_headers=extra_headers
         )
+        self.__close_connection()
 
     def reply(self,
               status_code: int,
@@ -130,6 +138,7 @@ class Request:
                 '\r\n'.join(entity_headers),
                 f'\r\n{message_body}'
             ]), 'utf-8'))
+        self.__close_connection()
 
     def reply_bytearray(self, byte_array: bytearray):
         """
@@ -139,3 +148,4 @@ class Request:
         - `byte_array` - bytearray representation of the TCP payload
         """
         self.__request.sendall(byte_array)
+        self.__close_connection()
