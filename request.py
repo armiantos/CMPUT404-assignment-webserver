@@ -1,5 +1,8 @@
 import json
+from socket import MSG_DONTWAIT, SocketType, socket
 from constants import HTTP_METHODS, STATUS_CODES, CONTENT_TYPES
+
+BUFFER_SIZE = 1024
 
 
 class Request:
@@ -7,11 +10,11 @@ class Request:
     Wrapper class for HTTP requests that can be used to read and reply to requests
     """
 
-    def __init__(self, socket_request):
+    def __init__(self, socket_request: SocketType):
         """
         Create a new HTTP request wrapper from a TCP socket request
         """
-        tcp_payload = socket_request.recv(1024).strip()
+        tcp_payload = self.__read_full_request(socket_request)
 
         # https://stackoverflow.com/questions/606191/convert-bytes-to-a-string
         http_request: str = tcp_payload.decode('utf-8')
@@ -34,7 +37,22 @@ class Request:
         except:
             self.valid = False
 
-    def __validate(self):
+    def __read_full_request(self, socket: SocketType) -> bytes:
+        """
+        Reads the entire TCP payload from the socket by unblocking the socket and
+        read the payload in chunks until it is finished
+        """
+        tcp_payload = b''
+        while True:
+            try:
+                # https://manpages.debian.org/bullseye/manpages-dev/recv.2.en.html#The_flags_argument
+                data = socket.recv(BUFFER_SIZE, MSG_DONTWAIT)
+                tcp_payload += data
+            except BlockingIOError as err:
+                break
+        return tcp_payload
+
+    def __validate(self) -> bool:
         """
         Helper function to ensure the TCP payload is HTTP/1.1 compliant
 
