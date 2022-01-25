@@ -91,8 +91,6 @@ class Request:
         """
         Closes the socket connection to finish the request gracefully
         """
-        self.__request.shutdown(SHUT_WR)
-        self.__request.close()
 
     def reply_json(self, obj: dict, status_code: int, extra_headers: str = None):
         """
@@ -111,7 +109,6 @@ class Request:
             content_type=CONTENT_TYPES['json'],
             extra_headers=extra_headers
         )
-        self.__close_connection()
 
     def reply(self,
               status_code: int,
@@ -130,7 +127,6 @@ class Request:
         """
         entity_headers = [
             f'Content-Length: {len(message_body)}',
-            f'Connection: close',
         ]
 
         if content_type != None:
@@ -145,7 +141,6 @@ class Request:
                 '\r\n'.join(entity_headers),
                 f'\r\n{message_body}'
             ]), 'utf-8'))
-        self.__close_connection()
 
     def reply_bytearray(self, byte_array: bytearray):
         """
@@ -155,4 +150,3 @@ class Request:
         - `byte_array` - bytearray representation of the TCP payload
         """
         self.__request.sendall(byte_array)
-        self.__close_connection()
