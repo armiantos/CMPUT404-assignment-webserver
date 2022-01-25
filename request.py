@@ -22,9 +22,6 @@ class Request:
         try:
             self.__parse_request(request_socket)
             self.valid = self.__validate()
-
-            if self.method == 'PUT':
-                print(self.headers)
         except Exception as err:
             self.valid = False
 
@@ -56,9 +53,6 @@ class Request:
                     return
 
                 body = headers_and_body[1]
-                if self.method == 'PUT':
-                    print(body)
-                    print(len(body))
                 if len(body) == int(self.headers['Content-Length']):
                     self.body = body
                     return
