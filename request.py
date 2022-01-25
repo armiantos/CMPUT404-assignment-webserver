@@ -42,20 +42,27 @@ class Request:
             payload = raw_payload.decode('utf-8')
 
             if self.headers == None:
-                self.headers = {}
                 headers_and_body = payload.split('\r\n\r\n')
-                headers_split = headers_and_body[0].split('\r\n')
+                self.__initialize_headers(headers_and_body[0])
 
-                self.__parse_status_line(headers_split[0])
-                self.__parse_headers(headers_split[1:])
+            if 'Content-Length' not in self.headers:
+                return
 
-                if 'Content-Length' not in self.headers:
-                    return
+            body = headers_and_body[1]
+            if len(body) == int(self.headers['Content-Length']):
+                self.body = body
+                return
 
-                body = headers_and_body[1]
-                if len(body) == int(self.headers['Content-Length']):
-                    self.body = body
-                    return
+    def __initialize_headers(self, headers: str):
+        """
+        Takes a string holding all the characters up to the final CLRF just before the HTTP message body
+        and populates the corresponding fields in the Request object.
+        """
+        self.headers = {}
+        headers_split = headers.split('\r\n')
+
+        self.__parse_status_line(headers_split[0])
+        self.__parse_headers(headers_split[1:])
 
     def __parse_status_line(self, status_line: str):
         """
