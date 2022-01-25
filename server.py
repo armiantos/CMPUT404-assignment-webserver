@@ -30,6 +30,8 @@ from request import Request
 
 # try: curl -v -X GET http://127.0.0.1:8080/
 
+file_server = FileServer('/', './www')
+
 
 class MyWebServer(socketserver.BaseRequestHandler):
     def handle(self):
@@ -39,7 +41,6 @@ class MyWebServer(socketserver.BaseRequestHandler):
                 bytearray("Request doesn't follow HTTP/1.1 protocol", 'utf-8'))
             return
 
-        file_server = FileServer('/', './www')
         if file_server.handle(request):
             return
 

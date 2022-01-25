@@ -61,7 +61,6 @@ class FileServer:
         # https://www.w3schools.com/python/python_file_open.asp
         try:
             file = open(file_path, encoding=encoding)
-
         except FileNotFoundError as err:
             request.reply_json({'err': err.strerror}, status_code=404)
             return True
