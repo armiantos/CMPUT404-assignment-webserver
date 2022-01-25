@@ -1,9 +1,8 @@
 import json
-from socket import SHUT_WR, SocketType, timeout
+from socket import SHUT_WR, SocketType
 from constants import HTTP_METHODS, STATUS_CODES, CONTENT_TYPES
 
 BUFFER_SIZE = 1024
-READ_REQUEST_TIMEOUT_SECONDS = 1
 
 
 class Request:
@@ -15,48 +14,71 @@ class Request:
         """
         Create a new HTTP request wrapper from a TCP socket request
         """
-        tcp_payload = self.__read_full_request(request_socket)
+        self.headers = None
+        self.body = None
 
-        # https://stackoverflow.com/questions/606191/convert-bytes-to-a-string
-        http_request: str = tcp_payload.decode('utf-8')
         self.__request = request_socket
 
         try:
-            http_headers = http_request.split('\r\n\r\n')[0]
-
-            headers_split = http_headers.split('\r\n')
-            request_line = headers_split[0]
-            self.headers = headers_split[1:]
-
-            method, uri, http_version = request_line.split(' ')
-
-            self.method = method
-            self.uri = uri
-            self.http_version = http_version
-
+            self.__parse_request(request_socket)
             self.valid = self.__validate()
-        except:
+
+            if self.method == 'PUT':
+                print(self.headers)
+        except Exception as err:
             self.valid = False
 
-    def __read_full_request(self, socket: SocketType) -> bytes:
+    def __parse_request(self, socket: SocketType) -> bytes:
         """
-        Reads the entire TCP payload from the socket by unblocking the socket and
-        read the payload in chunks until it is finished. Assumes there's only
-        one HTTP request sent per connection.
+        Parses the entire request and populates the following `self` fields: `method`, `uri`, `http_version`, `headers`, `body`
         """
-        socket.settimeout(READ_REQUEST_TIMEOUT_SECONDS)
-        payload = b''
-        is_finished = False
-        while not is_finished:
-            try:
-                chunk = socket.recv(BUFFER_SIZE)
-                if len(chunk) < BUFFER_SIZE:
-                    is_finished = True
-                payload += chunk
-            except timeout:
-                # Timeout when chunk size is an integer multiple of BUFFER_SIZE
-                is_finished = True
-        return payload
+        raw_payload = b''
+        while True:
+            chunk = socket.recv(BUFFER_SIZE)
+            raw_payload += chunk
+
+            if raw_payload.find(b'\r\n\r\n') == -1:
+                # Haven't seen end of HTTP header, keep reading
+                continue
+
+            # https://stackoverflow.com/questions/606191/convert-bytes-to-a-string
+            payload = raw_payload.decode('utf-8')
+
+            if self.headers == None:
+                self.headers = {}
+                headers_and_body = payload.split('\r\n\r\n')
+                headers_split = headers_and_body[0].split('\r\n')
+
+                self.__parse_status_line(headers_split[0])
+                self.__parse_headers(headers_split[1:])
+
+                if 'Content-Length' not in self.headers:
+                    return
+
+                body = headers_and_body[1]
+                if self.method == 'PUT':
+                    print(body)
+                    print(len(body))
+                if len(body) == int(self.headers['Content-Length']):
+                    self.body = body
+                    return
+
+    def __parse_status_line(self, status_line: str):
+        """
+        Parses through the given status line to fill in `self.method`, `self.uri`, `self.http_version`
+        """
+        method, uri, http_version = status_line.split(' ')
+        self.method = method
+        self.uri = uri
+        self.http_version = http_version
+
+    def __parse_headers(self, headers: list[str]):
+        """
+        Parses through the given array of HTTP headers to fill in the dictionary `self.headers`
+        """
+        for header in headers:
+            key, value = header.split(': ')
+            self.headers[key] = value
 
     def __validate(self) -> bool:
         """
@@ -86,11 +108,6 @@ class Request:
         http_version = 'HTTP/1.1'
         reason_phrase = STATUS_CODES[status_code]
         return f'{http_version} {status_code} {reason_phrase}'
-
-    def __close_connection(self):
-        """
-        Closes the socket connection to finish the request gracefully
-        """
 
     def reply_json(self, obj: dict, status_code: int, extra_headers: str = None):
         """
