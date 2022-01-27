@@ -60,3 +60,5 @@ HTTP_METHODS = [
     'TRACE',
     'CONNECT',
 ]
+
+DEFAULT_ENCODING = 'utf-8'

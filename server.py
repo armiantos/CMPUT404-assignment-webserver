@@ -1,5 +1,6 @@
 # coding: utf-8
 import socketserver
+from constants import DEFAULT_ENCODING
 from file_server import FileServer
 from request import Request
 
@@ -38,7 +39,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
         request = Request(self.request)
         if not request.valid:
             request.reply_bytearray(
-                bytearray("Request doesn't follow HTTP/1.1 protocol", 'utf-8'))
+                bytearray("Request doesn't follow HTTP/1.1 protocol", DEFAULT_ENCODING))
             return
 
         if file_server.handle(request):

@@ -1,6 +1,7 @@
 import json
-from socket import SHUT_WR, SocketType
-from constants import HTTP_METHODS, STATUS_CODES, CONTENT_TYPES
+from socket import SocketType
+from constants import DEFAULT_ENCODING, HTTP_METHODS, STATUS_CODES, CONTENT_TYPES
+from helpers import to_bytearray
 
 BUFFER_SIZE = 1024
 
@@ -22,7 +23,7 @@ class Request:
         try:
             self.__parse_request(request_socket)
             self.valid = self.__validate()
-        except Exception as err:
+        except Exception:
             self.valid = False
 
     def __parse_request(self, socket: SocketType) -> bytes:
@@ -39,7 +40,7 @@ class Request:
                 continue
 
             # https://stackoverflow.com/questions/606191/convert-bytes-to-a-string
-            payload = raw_payload.decode('utf-8')
+            payload = raw_payload.decode(DEFAULT_ENCODING)
 
             if self.headers == None:
                 headers_and_body = payload.split('\r\n\r\n')
@@ -123,14 +124,14 @@ class Request:
         # https://www.geeksforgeeks.org/how-to-convert-python-dictionary-to-json/
         self.reply(
             status_code,
-            message_body=json.dumps(obj),
+            message_body=to_bytearray(json.dumps(obj)),
             content_type=CONTENT_TYPES['json'],
             extra_headers=extra_headers
         )
 
     def reply(self,
               status_code: int,
-              message_body: str,
+              message_body: bytearray,
               content_type: str,
               extra_headers: str = None):
         """
@@ -138,7 +139,7 @@ class Request:
 
         Params:
         - `status_code` - the HTTP response that should be sent to the client
-        - `message_body` - a string representation of the message body
+        - `message_body` - a bytearray representing the encoded text or binary contents of a file
         - `content_type` - the value to be used in the 'Content-Type' field of the HTTP header (possibly including character encoding)
         - `extra_headers` - additional headers that should be attached (use `'\r\n'.join`
            if you have multiple headers that need to be attached)
@@ -157,8 +158,8 @@ class Request:
             bytearray('\r\n'.join([
                 self.__status_line(status_code),
                 '\r\n'.join(entity_headers),
-                f'\r\n{message_body}'
-            ]), 'utf-8'))
+                f'\r\n'
+            ]), DEFAULT_ENCODING) + message_body)
 
     def reply_bytearray(self, byte_array: bytearray):
         """
