@@ -35,29 +35,20 @@ class FileServer:
             return False
 
         if request.method != 'GET':
-            request.reply_json(
-                {'err': 'File server only supports HTTP GET'},
-                status_code=405
-            )
+            request.reply_json({'err': 'File server only supports HTTP GET'}, status_code=405)
             return True
 
         # https://www.geeksforgeeks.org/python-os-path-join-method/
-        file_path = os.path.join(
-            self.directory_path, remove_prefix(request.uri, self.base_path))
+        file_path = os.path.join(self.directory_path, remove_prefix(request.uri, self.base_path))
         if os.path.isdir(file_path) and not file_path.endswith('/'):
-            request.reply_json(
-                {'msg': f'Redirecting you to {request.uri}/'},
-                status_code=301,
-                extra_headers=f'Location: {request.uri}/'
-            )
+            request.reply_json({'msg': f'Redirecting you to {request.uri}/'},
+                               status_code=301,
+                               extra_headers=f'Location: {request.uri}/')
             return
         if file_path.endswith('/'):
             file_path = os.path.join(file_path, 'index.html')
         if not is_path_under_directory(file_path, self.directory_path):
-            request.reply_json(
-                {'err': FileNotFoundError().strerror},
-                status_code=404
-            )
+            request.reply_json({'err': FileNotFoundError().strerror}, status_code=404)
             return True
 
         extension = file_path.split('.')[-1] if len(file_path.split('.')) > 0 else None
@@ -75,16 +66,11 @@ class FileServer:
             payload = file.read()
             file.close()
 
-            request.reply(
-                message_body=payload,
-                content_type='application/octet-stream',
-                status_code=200
-            )
+            request.reply(message_body=payload, content_type='application/octet-stream', status_code=200)
         except FileNotFoundError as err:
             request.reply_json({'err': err.strerror}, status_code=404)
         except Exception as err:
-            request.reply_json(
-                {'err': str(err)}, status_code=500)
+            request.reply_json({'err': str(err)}, status_code=500)
 
     def __send_text_file(self, request: Request, file_path: str, extension: str):
         try:
@@ -97,18 +83,8 @@ class FileServer:
             if extension in CONTENT_TYPES:
                 content_type = f'{CONTENT_TYPES[extension]}; charset={DEFAULT_ENCODING}'
 
-            request.reply(
-                message_body=to_bytearray(payload),
-                content_type=content_type,
-                status_code=200
-            )
+            request.reply(message_body=to_bytearray(payload), content_type=content_type, status_code=200)
         except FileNotFoundError as err:
-            request.reply_json(
-                {'err': err.strerror},
-                status_code=404
-            )
+            request.reply_json({'err': err.strerror}, status_code=404)
         except Exception as err:
-            request.reply_json(
-                {'err': str(err)},
-                status_code=500
-            )
+            request.reply_json({'err': str(err)}, status_code=500)

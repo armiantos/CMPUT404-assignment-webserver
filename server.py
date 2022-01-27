@@ -4,7 +4,6 @@ from constants import DEFAULT_ENCODING
 from file_server import FileServer
 from request import Request
 
-
 # Copyright 2022 Armianto Sumitro
 # Copyright 2013 Abram Hindle, Eddie Antonio Santos
 #
@@ -35,11 +34,11 @@ file_server = FileServer('/', './www')
 
 
 class MyWebServer(socketserver.BaseRequestHandler):
+
     def handle(self):
         request = Request(self.request)
         if not request.valid:
-            request.reply_bytearray(
-                bytearray("Request doesn't follow HTTP/1.1 protocol", DEFAULT_ENCODING))
+            request.reply_bytearray(bytearray("Request doesn't follow HTTP/1.1 protocol", DEFAULT_ENCODING))
             return
 
         if file_server.handle(request):
