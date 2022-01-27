@@ -1,6 +1,6 @@
 import json
 from socket import SocketType
-from constants import DEFAULT_ENCODING, HTTP_METHODS, STATUS_CODES, CONTENT_TYPES
+from constants import DEFAULT_ENCODING, HTTP_METHODS, STATUS_CODES, TEXT_CONTENT_TYPES
 from helpers import to_bytearray
 
 BUFFER_SIZE = 1024
@@ -124,7 +124,7 @@ class Request:
         # https://www.geeksforgeeks.org/how-to-convert-python-dictionary-to-json/
         self.reply(status_code,
                    message_body=to_bytearray(json.dumps(obj)),
-                   content_type=CONTENT_TYPES['json'],
+                   content_type=TEXT_CONTENT_TYPES['json'],
                    extra_headers=extra_headers)
 
     def reply(self, status_code: int, message_body: bytearray, content_type: str, extra_headers: str = None):

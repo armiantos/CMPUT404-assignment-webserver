@@ -1,5 +1,5 @@
 import json
-from constants import CONTENT_TYPES, DEFAULT_ENCODING
+from constants import TEXT_CONTENT_TYPES, DEFAULT_ENCODING
 from helpers import is_path_under_directory, remove_prefix, to_bytearray
 from request import Request
 import os
@@ -53,7 +53,7 @@ class FileServer:
 
         extension = file_path.split('.')[-1] if len(file_path.split('.')) > 0 else None
 
-        if extension is None or extension not in CONTENT_TYPES:
+        if extension is None or extension not in TEXT_CONTENT_TYPES:
             self.__send_binary(request, file_path)
             return True
 
@@ -61,6 +61,13 @@ class FileServer:
         return True
 
     def __send_binary(self, request: Request, file_path: str):
+        """
+        Respond to a request by sending the binary contents of a file (e.g. images) at the given filepath.
+
+        Params:
+        - `request` - the HTTP request object
+        - `file_path` - the relative path to file
+        """
         try:
             file = open(file_path, 'br')
             payload = file.read()
@@ -73,15 +80,23 @@ class FileServer:
             request.reply_json({'err': str(err)}, status_code=500)
 
     def __send_text_file(self, request: Request, file_path: str, extension: str):
+        """
+        Respond to a request by sending the the encoded contents of a text file (e.g. images) at the given filepath.
+        File must have extension listed in in TEXT_CONTENT_TYPES (e.g. html, css, json)
+        
+        Params:
+        - `request` - the HTTP request object
+        - `file_path` - the relative path to file
+        - `extension` - the file extension at the end of the file_path,
+                        this is used to determine the content type in the HTTP header
+        """
         try:
             # https://www.w3schools.com/python/python_file_open.asp
             file = open(file_path, 'r', encoding=DEFAULT_ENCODING)
             payload = file.read()
             file.close()
 
-            content_type = None
-            if extension in CONTENT_TYPES:
-                content_type = f'{CONTENT_TYPES[extension]}; charset={DEFAULT_ENCODING}'
+            content_type = content_type = f'{TEXT_CONTENT_TYPES[extension]}; charset={DEFAULT_ENCODING}'
 
             request.reply(message_body=to_bytearray(payload), content_type=content_type, status_code=200)
         except FileNotFoundError as err:
