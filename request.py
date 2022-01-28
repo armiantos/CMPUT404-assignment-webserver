@@ -140,6 +140,7 @@ class Request:
         """
         entity_headers = [
             f'Content-Length: {len(message_body)}',
+            'Server: sumitro-server/1.0'
         ]
 
         if content_type != None:
