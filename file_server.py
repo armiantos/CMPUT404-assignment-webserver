@@ -31,7 +31,7 @@ class FileServer:
         True if the request was handled, False otherwise        
         """
         # Match route
-        if not request.uri.startswith(self.base_path):
+        if not request.path.startswith(self.base_path):
             return False
 
         if request.method != 'GET':
@@ -39,11 +39,13 @@ class FileServer:
             return True
 
         # https://www.geeksforgeeks.org/python-os-path-join-method/
-        file_path = os.path.join(self.directory_path, remove_prefix(request.uri, self.base_path))
+        file_path = os.path.join(self.directory_path, remove_prefix(request.path, self.base_path))
         if os.path.isdir(file_path) and not file_path.endswith('/'):
-            request.reply_json({'msg': f'Redirecting you to {request.uri}/'},
+            original_host = request.headers['Host']
+            absolute_path = f'http://{original_host}{request.path}/'
+            request.reply_json({'msg': f'Redirecting you to {absolute_path}'},
                                status_code=301,
-                               extra_headers=f'Location: {request.uri}/')
+                               extra_headers=f'Location: {absolute_path}')
             return
         if file_path.endswith('/'):
             file_path = os.path.join(file_path, 'index.html')

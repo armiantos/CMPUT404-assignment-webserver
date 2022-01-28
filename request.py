@@ -69,9 +69,9 @@ class Request:
         """
         Parses through the given status line to fill in `self.method`, `self.uri`, `self.http_version`
         """
-        method, uri, http_version = status_line.split(' ')
+        method, path, http_version = status_line.split(' ')
         self.method = method
-        self.uri = uri
+        self.path = path
         self.http_version = http_version
 
     def __parse_headers(self, headers: list[str]):
