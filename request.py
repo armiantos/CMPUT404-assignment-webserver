@@ -157,10 +157,14 @@ class Request:
         if extra_headers != None:
             entity_headers.append(extra_headers)
 
-        self.__request.sendall(
-            bytearray('\r\n'.join([self.__status_line(status_code), '\r\n'.join(entity_headers), f'\r\n']),
-                      DEFAULT_ENCODING) + message_body)
-        self.__close_connection()
+        try:
+            self.__request.sendall(
+                bytearray('\r\n'.join([self.__status_line(status_code), '\r\n'.join(entity_headers), f'\r\n']),
+                        DEFAULT_ENCODING) + message_body)
+            self.__close_connection()
+        except OSError:
+            # Connection already closed
+            return
 
     def reply_bytearray(self, byte_array: bytearray):
         """
