@@ -46,7 +46,7 @@ class FileServer:
             request.reply_json({'msg': f'Redirecting you to {absolute_path}'},
                                status_code=301,
                                extra_headers=f'Location: {absolute_path}')
-            return
+            return True
         if file_path.endswith('/'):
             file_path = os.path.join(file_path, 'index.html')
         if not is_path_under_directory(file_path, self.directory_path):
