@@ -67,16 +67,22 @@ class Request:
 
     def __parse_status_line(self, status_line: str):
         """
-        Parses through the given status line to fill in `self.method`, `self.uri`, `self.http_version`
-        """
+        Parses through the given status line to fill in `self.method`, `self.path`, `self.http_version`
+        
+        Params:
+        - `status_line` - the status line string to get the method, path, and http version from
+       """
         method, path, http_version = status_line.split(' ')
         self.method = method
         self.path = path
         self.http_version = http_version
 
-    def __parse_headers(self, headers: list[str]):
+    def __parse_headers(self, headers):
         """
         Parses through the given array of HTTP headers to fill in the dictionary `self.headers`
+        
+        Params:
+        - `headers` - an array of strings after the status line but before the final CLRF before the payload
         """
         for header in headers:
             key, value = header.split(': ')
