@@ -1,5 +1,5 @@
 import json
-from socket import SocketType
+from socket import SHUT_WR, SocketType
 from constants import DEFAULT_ENCODING, HTTP_METHODS, STATUS_CODES, TEXT_CONTENT_TYPES
 from helpers import to_bytearray
 
@@ -111,6 +111,13 @@ class Request:
         reason_phrase = STATUS_CODES[status_code]
         return f'{http_version} {status_code} {reason_phrase}'
 
+    def __close_connection(self):
+        """
+        Closes socket connection associated with request.
+        """
+        self.__request.shutdown(SHUT_WR)
+        self.__request.close()
+
     def reply_json(self, obj: dict, status_code: int, extra_headers: str = None):
         """
         Respond to a HTTP request with a json object
@@ -140,7 +147,8 @@ class Request:
         """
         entity_headers = [
             f'Content-Length: {len(message_body)}',
-            'Server: sumitro-server/1.0'
+            'Server: sumitro-server/1.0',
+            'Connection: close'
         ]
 
         if content_type != None:
@@ -152,6 +160,7 @@ class Request:
         self.__request.sendall(
             bytearray('\r\n'.join([self.__status_line(status_code), '\r\n'.join(entity_headers), f'\r\n']),
                       DEFAULT_ENCODING) + message_body)
+        self.__close_connection()
 
     def reply_bytearray(self, byte_array: bytearray):
         """
@@ -161,3 +170,4 @@ class Request:
         - `byte_array` - bytearray representation of the TCP payload
         """
         self.__request.sendall(byte_array)
+        self.__close_connection()
